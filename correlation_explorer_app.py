@@ -24,7 +24,7 @@ df["Season"] = df["month"].apply(get_season)
 # 2. App Initialization
 app = Dash(__name__)
 app.title = "Correlation & Insight Explorer"
-
+server = app.server
 # Define the variables for the dropdowns
 def get_variables(scope):
     if scope == "global":
