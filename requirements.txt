@@ -2,4 +2,6 @@ dash
 pandas
 plotly
 gunicorn
+dash_daq
 scikit-learn
+dash>=2.6.0
