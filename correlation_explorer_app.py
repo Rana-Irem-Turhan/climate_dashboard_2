@@ -4,6 +4,8 @@ import plotly.graph_objects as go
 from dash import Dash, dcc, html, Input, Output, State, ctx
 import dash_daq as daq
 import numpy as np
+import dash_bootstrap_components as dbc
+
 
 # 1. Data Loading & Preprocessing
 
@@ -24,7 +26,7 @@ df["Season"] = df["month"].apply(get_season)
 # 2. App Initialization
 app = Dash(__name__)
 app.title = "Correlation & Insight Explorer"
-server = app.server
+
 # Define the variables for the dropdowns
 def get_variables(scope):
     if scope == "global":
@@ -51,89 +53,86 @@ def get_variables(scope):
         }
 
 #  3. App Layout
-app.layout = html.Div([
-    html.H2("Correlation & Insight Explorer", style={'textAlign': 'center'}),
+app = Dash(__name__, external_stylesheets=[dbc.themes.FLATLY])
+app.title = "Correlation & Insight Explorer"
 
-    html.Div([
-        html.Label("Scope"),
-        dcc.RadioItems(id="scope-selector", options=[
-            {"label": "🌍 Global", "value": "global"},
-            {"label": "🌎 Northern Hemisphere", "value": "nh"},
-            {"label": "🌏 Southern Hemisphere", "value": "sh"}
-        ],
-        value="global",
-        labelStyle={"display": "inline-block", "margin-right": "15px"}),
-    
-        html.Label("Theme", style={'marginTop': '10px'}),
-        daq.ToggleSwitch(
-            id='theme-toggle',
-            label=['Light', 'Dark'],
-            value=False,
-            style={'marginTop': '5px'}
-        )
-    ], style={
-        'width': '100%',
-        'maxWidth': '1200px',
-        'margin': '0 auto',
-        'fontSize': '16px'
-    }),
-    
-    
-    html.Div([
-        html.Div([
+app.layout = dbc.Container([
+    dbc.Row([
+        dbc.Col(html.H2("Correlation & Insight Explorer", className="text-center"), width=12)
+    ], className="my-3"),
+
+    dbc.Row([
+        dbc.Col([
+            html.Label("Scope"),
+            dcc.RadioItems(id="scope-selector", options=[
+                {"label": "🌍 Global", "value": "global"},
+                {"label": "🌎 Northern Hemisphere", "value": "nh"},
+                {"label": "🌏 Southern Hemisphere", "value": "sh"}
+            ], value="global", labelStyle={"display": "block"})
+        ], md=6),
+
+        dbc.Col([
+            html.Label("Theme"),
+            daq.ToggleSwitch(id='theme-toggle', label=['Light', 'Dark'], value=False)
+        ], md=6)
+    ], className="mb-3"),
+
+    dbc.Row([
+        dbc.Col([
             html.Label("X-axis Variable"),
-            dcc.Dropdown(id='x-axis-dropdown'),
-            html.Label("Y-axis Variable", style={'marginTop': '10px'}),
-            dcc.Dropdown(id='y-axis-dropdown')],
-        style={'width': '48%', 'display': 'inline-block', 'padding': '10px'}),
-        html.Div([
+            dcc.Dropdown(id='x-axis-dropdown')
+        ], md=6),
+        dbc.Col([
+            html.Label("Y-axis Variable"),
+            dcc.Dropdown(id='y-axis-dropdown')
+        ], md=6)
+    ], className="mb-3"),
+
+    dbc.Row([
+        dbc.Col([
             html.Label("Year Range"),
             dcc.RangeSlider(
                 id='year-slider',
                 min=df['year'].min(), max=df['year'].max(),
                 value=[df['year'].min(), df['year'].max()],
                 marks={str(year): str(year) for year in range(df['year'].min(), df['year'].max()+1, 5)},
-                step=1       
+                step=1
             ),
             html.Label("View Mode", style={'marginTop': '10px'}),
             dcc.RadioItems(
                 id='view-mode',
-                options=[{"label": "Monthly", "value": "Monthly"}, {"label": "Seasonal", "value": "Seasonal"}],
+                options=[
+                    {"label": "Monthly", "value": "Monthly"},
+                    {"label": "Seasonal", "value": "Seasonal"}
+                ],
                 value="Monthly",
                 labelStyle={"display": "inline-block", "margin-right": "10px"}
             )
-        ], style={'width': '48%', 'display': 'inline-block', 'padding': '10px'})
-    ], style={
-        'width': '100%',
-        'maxWidth': '1200px',
-        'margin': '0 auto',
-        'fontSize': '16px'
-    }),
+        ], md=12)
+    ], className="mb-4"),
 
-    html.Div([
-        html.H4("What You're Seeing", style={"marginTop": "20px"}),
-        html.P("This tool allows you to explore the statistical relationships between key climate indicators: CO₂ emissions, sea level rise, and temperature anomalies."),
-        html.P("You can switch between Global, Northern, or Southern Hemisphere views and use the dropdowns and sliders to select a timeframe and two indicators to compare."),
-        html.P("The scatter plot shows how the selected variables move together over time. A regression line is added to show the trend, and the R² value indicates how well one variable explains the other."),
-        html.P("Pearson's r (shown in the heatmap and above the scatter plot) ranges from -1 to +1. A value close to +1 means a strong positive correlation; close to -1 indicates a strong negative one; and close to 0 implies little to no correlation."),
-        html.P("The heatmap provides an overview of how all selected variables relate to one another within the chosen scope and time range. It uses Pearson’s correlation coefficients (r) to reveal linear relationships.")
-], style={
-    
-        "backgroundColor": "#f5f5f5",
-        "padding": "15px",
-        "border": "1px solid #ccc",
-        "borderRadius": "6px",
-        "marginTop": "20px",
-        "maxWidth": "900px",
-        "fontSize": "16px"
-    }),
+    dbc.Card([
+        dbc.CardHeader("🔍 What You’re Seeing – Climate Insights"),
+        dbc.CardBody([
+            html.P("This interactive tool allows you to explore the statistical relationships between climate indicators:"),
+            html.Ul([
+                html.Li("🌱 Human-induced CO₂ emissions heat the planet ➡️"),
+                html.Li("🌡️ Rising CO₂ leads to higher land and ocean temperatures ➡️"),
+                html.Li("🌊 Warmer climates cause sea level rise through ice melt and ocean expansion.")
+            ]),
+            html.P("Switch views (Global, Northern, Southern Hemisphere) and select indicators and years to compare."),
+            html.P("The scatter plot shows how the selected variables change together, with a regression trendline and R² value."),
+            html.P("Pearson's r (seen on the heatmap and above the scatter) helps you evaluate correlation strength."),
+            html.P("The correlation heatmap reveals how all indicators relate within your selected range.")
+        ])
+    ], className="mb-4"),
 
     html.Div(id='correlation-note', style={'padding': '10px', 'fontSize': '16px'}),
-
     dcc.Graph(id='scatter-plot'),
-    html.H4("Correlation Matrix (Pearson)", style={'textAlign': 'center', 'marginTop': '30px'}),
+    html.H4("Correlation Matrix (Pearson)", className="text-center mt-4"),
     dcc.Graph(id='correlation-heatmap')
-])
+], fluid=True)
+
 # 4. Callbacks
 @app.callback(
     Output('x-axis-dropdown', 'options'),
@@ -216,7 +215,7 @@ def update_visuals(x_var, y_var, year_range, mode, scope, dark_mode):
     heatmap.update_layout(template="plotly_dark" if dark_mode else "plotly_white")
 
     return fig, heatmap, corr_sentence
-
+server = app.server  # Required for gunicorn
 # 5. Run app
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run_server(debug=True, host='0.0.0.0', port=7860)
