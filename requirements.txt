@@ -1,7 +1,9 @@
-dash
-pandas
+dash==3.0.4
 plotly
+pandas
+numpy
 gunicorn
+Werkzeug==2.3.3
 dash_daq
-scikit-learn
-dash>=2.6.0
+statsmodels
+dash-bootstrap-components==1.5.0
